@@ -2,24 +2,38 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/style.css">
-    <title>Dream Manager</title>
+    <link href="https://googleapis.com" rel="stylesheet">
+    <title>Dream Manager | {{ user.username }}</title>
 </head>
 <body>
     <div class="container">
-        <!-- Прогресс -->
+        <!-- БЛОК ПРОФИЛЯ -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 10px;">
+            <div style="color: white; font-weight: 800; font-size: 1.1rem;">
+                Привет, <span style="color: var(--primary);">{{ user.username }}</span>! ✨
+            </div>
+            <a href="/logout" style="color: #ff7675; text-decoration: none; font-weight: 700; font-size: 0.9rem; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 10px; backdrop-filter: blur(5px);">Выйти</a>
+        </div>
+
+        <!-- ГЛАВНЫЙ ВИДЖЕТ ПРОГРЕССА -->
         <div class="card" style="text-align: center;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 800;">
                 <span>Твой прогресс</span>
                 <span>{{ progress }}%</span>
             </div>
-            <div class="progress-bar"><div class="progress-fill" id="progress-bar-fill" data-percent="{{ progress }}"></div></div>
-            <a href="/export/word" class="btn-word" style="margin-top: 15px; display: inline-block; text-decoration: none;">💾 Экспорт в Word</a>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-bar-fill" data-percent="{{ progress }}"></div>
+            </div>
+            <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+                <a href="/export/word" class="btn-word" style="text-decoration: none; font-size: 0.8rem;">💾 Экспорт в Word</a>
+            </div>
         </div>
 
-        <!-- Форма -->
-        <form action="/add" method="post" class="card add-form">
-            <input type="text" name="title" placeholder="Что создадим?" required>
+        <!-- ФОРМА ДОБАВЛЕНИЯ -->
+        <form action="/add" method="post" class="card add-form" style="display: flex; flex-direction: column;">
+            <input type="text" name="title" placeholder="Что создадим сегодня?" required>
             <div style="display: flex; gap: 10px;">
                 <input type="date" name="due_date" id="date-picker" style="flex: 2;">
                 <select name="category" style="flex: 1;">
@@ -31,49 +45,74 @@
             <button type="submit" class="btn-main">Создать задачу</button>
         </form>
 
-        <!-- Задачи -->
-        {% for task in tasks %}
-        <div class="task-card {% if task.is_completed %}completed{% endif %}">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <form action="/toggle/{{ task.id }}" method="post">
-                    <input type="checkbox" onchange="this.form.submit()" {% if task.is_completed %}checked{% endif %}>
-                </form>
-                <div>
-                    <div class="badge">{{ task.category }}</div>
-                    <div style="font-weight: 700;">{{ task.title }}</div>
+        <!-- СПИСОК ЗАДАЧ -->
+        <div class="section-label">📋 Текущие цели</div>
+        {% if tasks %}
+            {% for task in tasks %}
+            <div class="task-card {% if task.is_completed %}completed{% endif %}">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <form action="/toggle/{{ task.id }}" method="post">
+                        <input type="checkbox" onchange="this.form.submit()" {% if task.is_completed %}checked{% endif %} style="width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer;">
+                    </form>
+                    <div>
+                        <div class="badge">{{ task.category }}</div>
+                        <div style="font-weight: 700; margin-top: 4px;">{{ task.title }}</div>
+                        <div style="font-size: 0.7rem; opacity: 0.6;">Сделать до: {{ task.due_date }}</div>
+                    </div>
                 </div>
+                <form action="/delete/{{ task.id }}" method="post">
+                    <button type="submit" style="background: none; border: none; cursor: pointer; font-size: 1.2rem; opacity: 0.5;">🗑️</button>
+                </form>
             </div>
-            <form action="/delete/{{ task.id }}" method="post">
-                <button type="submit" style="background: none; border: none; cursor: pointer;">🗑️</button>
-            </form>
-        </div>
-        {% endfor %}
+            {% endfor %}
+        {% else %}
+            <div class="card" style="text-align: center; opacity: 0.6;">У тебя пока нет активных задач. Время что-то добавить!</div>
+        {% endif %}
 
-        <!-- Настройки -->
-        <div class="card settings-panel">
-            <div style="display: flex; gap: 10px;">
-                <button onclick="setTheme('light')">☀️</button>
-                <button onclick="setTheme('dark')" style="background: #000; color: #fff;">🌙</button>
+        <!-- КОРЗИНА (АРХИВ) -->
+        {% if trash %}
+        <div class="section-label">🗑️ Архив</div>
+        <div class="card">
+            {% for item in trash %}
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; opacity: 0.5;">
+                <strike>{{ item.title }}</strike>
+                <span style="font-size: 0.8rem;">{{ item.category }}</span>
             </div>
-            <select onchange="setFontFamily(this.value)">
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- ПАНЕЛЬ НАСТРОЕК -->
+        <div class="section-label">⚙️ Кастомизация</div>
+        <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; gap: 10px;">
+                <button onclick="setTheme('light')" style="border-radius: 50%; width: 35px; height: 35px; border: 1px solid var(--border); cursor: pointer;">☀️</button>
+                <button onclick="setTheme('dark')" style="border-radius: 50%; width: 35px; height: 35px; border: none; background: #000; color: #fff; cursor: pointer;">🌙</button>
+            </div>
+            <select onchange="setFontFamily(this.value)" style="margin: 0; font-size: 0.8rem; padding: 5px; border-radius: 10px;">
                 <option value="system-ui">Modern</option>
                 <option value="'Courier New', monospace">Retro</option>
                 <option value="'Georgia', serif">Classic</option>
                 <option value="'Verdana', sans-serif">Clean</option>
-                <option value="'Impact', sans-serif">Bold</option>
                 <option value="'Comic Sans MS', cursive">Comic</option>
             </select>
         </div>
     </div>
+
     <script src="/static/script.js"></script>
     <script>
         window.addEventListener('DOMContentLoaded', () => {
+            // Установка текущей даты
             const datePicker = document.getElementById('date-picker');
             if (datePicker) datePicker.valueAsDate = new Date();
+            
+            // Плавная анимация прогресс-бара
             const fill = document.getElementById('progress-bar-fill');
             if (fill) {
                 const percent = fill.getAttribute('data-percent');
-                setTimeout(() => { fill.style.width = percent + "%"; }, 300);
+                setTimeout(() => { 
+                    fill.style.width = percent + "%"; 
+                }, 300);
             }
         });
     </script>

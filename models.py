@@ -1,14 +1,22 @@
-from sqlalchemy import Column, Integer, String, Boolean, Date
+from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey
+from sqlalchemy.orm import relationship
 from database import Base
 import datetime
 
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    tasks = relationship("Task", back_populates="owner")
+
 class Task(Base):
     __tablename__ = "tasks"
-    __table_args__ = {'extend_existing': True} 
-
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, nullable=False)
-    category = Column(String, default="Дом")
-    due_date = Column(Date, default=datetime.date.today) # Новое поле
+    title = Column(String)
+    category = Column(String)
+    due_date = Column(Date, default=datetime.date.today)
     is_completed = Column(Boolean, default=False)
     is_deleted = Column(Boolean, default=False)
+    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner = relationship("User", back_populates="tasks")

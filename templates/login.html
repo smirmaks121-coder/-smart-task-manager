@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/style.css">
+    <title>Вход | Smart Manager</title>
+</head>
+<body>
+    <div class="container" style="display: flex; align-items: center; justify-content: center; min-height: 100vh;">
+        <div class="card" style="width: 100%; max-width: 400px; text-align: center;">
+            <h1>Smart Manager ✨</h1>
+            <form action="/login" method="post" id="login-form" style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="text" name="username" placeholder="Логин" required>
+                <input type="password" name="password" placeholder="Пароль" required>
+                <button type="submit" class="btn-main">Войти</button>
+            </form>
+            <p style="margin-top: 20px;">Нет аккаунта? <a href="#" onclick="document.getElementById('reg-form').style.display='flex'" style="color: var(--primary);">Создать</a></p>
+            <form action="/register" method="post" id="reg-form" style="display: none; flex-direction: column; gap: 15px; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px;">
+                <input type="text" name="username" placeholder="Новый логин" required>
+                <input type="password" name="password" placeholder="Новый пароль" required>
+                <button type="submit" class="btn-main" style="background: #10b981;">Зарегистрироваться</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
